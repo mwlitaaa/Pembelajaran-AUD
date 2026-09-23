@@ -1,0 +1,894 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Petualangan Sehari-hari - Game Edukasi Anak</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  :root{
+    --pink:#FFB6C1; --pink-soft:#FFD9E0; --blue:#A8D8EA; --blue-deep:#7EC4E8;
+    --yellow:#FFE59D; --yellow-deep:#FFD24C; --green:#B8E6B8; --green-deep:#7FD67F;
+    --purple:#D9C2F0; --orange:#FFC49B; --cream:#FFF9F0; --text:#5A4A42;
+  }
+  body{
+    font-family:'Comic Sans MS','Segoe UI',Verdana,sans-serif;
+    background:linear-gradient(160deg,#BFE9FF 0%,#FFE9F3 45%,#FFF7D6 100%);
+    min-height:100vh; display:flex; align-items:center; justify-content:center;
+    padding:16px; color:var(--text); overflow-x:hidden;
+  }
+  #app{
+    width:100%; max-width:920px; background:var(--cream);
+    border-radius:36px; box-shadow:0 14px 40px rgba(120,100,140,.28);
+    padding:26px 30px 32px; position:relative; overflow:hidden;
+    border:6px solid #fff;
+  }
+  .deco{position:absolute;opacity:.55;pointer-events:none;font-size:26px}
+  .d1{top:14px;left:18px}.d2{top:22px;right:26px}.d3{bottom:16px;left:30px}
+  .d4{bottom:22px;right:20px}.d5{top:50%;left:6px}.d6{top:48%;right:8px}
+  @keyframes floaty{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+  .floaty{animation:floaty 3.2s ease-in-out infinite}
+  .page{display:none; animation:pop .45s cubic-bezier(.34,1.56,.64,1)}
+  .page.active{display:block}
+  @keyframes pop{from{opacity:0;transform:scale(.94) translateY(14px)}to{opacity:1;transform:none}}
+  .btn{
+    border:none; cursor:pointer; font-family:inherit; font-weight:bold;
+    border-radius:999px; transition:transform .15s, box-shadow .15s, filter .15s;
+    display:inline-flex; align-items:center; justify-content:center; gap:10px;
+    text-align:center; line-height:1.25;
+  }
+  .btn:active{transform:scale(.95)}
+  .btn-big{
+    font-size:26px; padding:20px 54px; color:#fff;
+    background:linear-gradient(180deg,#FFB347,#FF8C42);
+    box-shadow:0 8px 0 #D96E22, 0 12px 22px rgba(217,110,34,.35);
+  }
+  .btn-big:hover{filter:brightness(1.06)}
+  .btn-big:active{box-shadow:0 4px 0 #D96E22; transform:translateY(4px) scale(.98)}
+  .hero{text-align:center; padding:6px 0 4px}
+  .hero h1{
+    font-size:clamp(30px,6vw,54px); color:#FF6FA5; letter-spacing:1px;
+    text-shadow:3px 3px 0 #fff, 6px 6px 0 #FFD9E0; margin-bottom:6px;
+  }
+  .hero .sub{
+    font-size:clamp(16px,2.6vw,24px); color:#7A6A62; background:#FFF1C9;
+    display:inline-block; padding:10px 26px; border-radius:999px; margin-bottom:10px;
+    border:3px dashed #FFD24C;
+  }
+  .lala-wrap{display:flex; justify-content:center; margin:6px 0 4px}
+  .lala-wrap svg{width:min(300px,62vw); height:auto; filter:drop-shadow(0 10px 14px rgba(0,0,0,.12))}
+  .bubble{
+    background:#fff; border:4px solid var(--blue); border-radius:24px;
+    padding:12px 20px; font-size:clamp(15px,2.2vw,20px); color:#4A6E82;
+    display:inline-block; max-width:560px; position:relative; margin-bottom:16px;
+  }
+  .bubble::after{
+    content:''; position:absolute; bottom:-16px; left:50%; transform:translateX(-50%);
+    border:8px solid transparent; border-top-color:var(--blue);
+  }
+  .topbar{display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:10px}
+  .pill{
+    background:#fff; border:3px solid var(--purple); border-radius:999px;
+    padding:7px 18px; font-size:16px; font-weight:bold; color:#7C5CA8; white-space:nowrap;
+  }
+  .pill.score{border-color:var(--yellow-deep); color:#B8791A; background:#FFFBEC}
+  .prog-wrap{flex:1; height:18px; background:#EFE6DA; border-radius:999px; overflow:hidden; border:3px solid #fff}
+  .prog{height:100%; width:0%; background:linear-gradient(90deg,#7FD67F,#B8E6B8); border-radius:999px; transition:width .5s}
+  .scene{
+    display:flex; align-items:center; gap:18px; background:#fff;
+    border-radius:28px; padding:16px 20px; border:4px solid var(--blue);
+    box-shadow:0 6px 0 #DCEEF7; margin-bottom:14px; flex-wrap:wrap;
+  }
+  .scene .art{flex:0 0 auto; display:flex; justify-content:center}
+  .scene .art svg{width:min(320px,72vw); height:auto}
+  .scene .story{flex:1 1 260px; min-width:240px}
+  .scene .story .situ{font-size:clamp(16px,2.3vw,21px); line-height:1.5; color:#4E5A63;}
+  .listen{
+    margin-top:10px; background:#EAF7FF; border:3px solid var(--blue-deep); color:#2E7BA6;
+    font-size:15px; padding:8px 18px; border-radius:999px; cursor:pointer; font-family:inherit; font-weight:bold;
+  }
+  .listen:hover{background:#D8F0FF}
+  .ask{
+    font-size:clamp(18px,2.8vw,25px); font-weight:bold; color:#E1568C;
+    text-align:center; margin:6px 0 14px;
+  }
+  .options{display:flex; flex-direction:column; gap:12px; margin-bottom:14px}
+  .opt{
+    display:flex; align-items:center; gap:14px; width:100%; text-align:left;
+    background:#fff; border:4px solid #E7DFD5; border-radius:22px; padding:14px 18px;
+    font-size:clamp(16px,2.3vw,21px); color:#4E5A63; cursor:pointer; font-family:inherit;
+    transition:transform .15s, border-color .2s, background .2s, box-shadow .2s;
+    box-shadow:0 5px 0 #EDE5DA;
+  }
+  .opt:hover:not(:disabled){transform:translateY(-2px); border-color:var(--blue-deep); background:#F5FCFF}
+  .opt:disabled{cursor:default}
+  .opt .letter{
+    flex:0 0 auto; width:44px; height:44px; border-radius:50%;
+    background:var(--yellow); color:#9A6A0E; font-weight:bold; font-size:22px;
+    display:flex; align-items:center; justify-content:center; border:3px solid #fff;
+    box-shadow:0 2px 6px rgba(0,0,0,.1);
+  }
+  .opt.correct{border-color:#5FBF5F; background:#EAFBEA; box-shadow:0 5px 0 #BFE9BF; animation:shake-yes .5s}
+  .opt.correct .letter{background:#B8E6B8; color:#2F7A2F}
+  .opt.wrong{border-color:#FFA8A8; background:#FFF1F1; box-shadow:0 5px 0 #FFD6D6; animation:shake-no .45s}
+  .opt.wrong .letter{background:#FFC9C9; color:#B23B3B}
+  .opt.dim{opacity:.5}
+  @keyframes shake-yes{0%,100%{transform:scale(1)}40%{transform:scale(1.04)}}
+  @keyframes shake-no{0%,100%{transform:translateX(0)}25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+  .feedback{
+    border-radius:24px; padding:16px 20px; font-size:clamp(16px,2.3vw,21px);
+    display:none; align-items:center; gap:14px; line-height:1.45;
+    animation:pop .4s cubic-bezier(.34,1.56,.64,1);
+  }
+  .feedback.show{display:flex}
+  .feedback.ok{background:#EAFBEA; border:4px solid #7FD67F; color:#2F7A2F}
+  .feedback.no{background:#FFF6E5; border:4px solid #FFD24C; color:#9A6A0E}
+  .feedback .emo{font-size:42px; flex:0 0 auto}
+  .feedback .fb-text{flex:1}
+  .next-btn{
+    margin-top:12px; font-size:20px; padding:14px 34px; color:#fff;
+    background:linear-gradient(180deg,#7EC4E8,#4FA8D8);
+    box-shadow:0 7px 0 #3487B3, 0 10px 18px rgba(52,135,179,.3);
+    display:none;
+  }
+  .next-btn.show{display:inline-flex; animation:pop .4s}
+  .next-btn:active{box-shadow:0 3px 0 #3487B3; transform:translateY(4px)}
+  .next-row{text-align:center}
+  .finish{text-align:center; padding:8px 0}
+  .finish h2{
+    font-size:clamp(34px,7vw,60px); color:#FF6FA5;
+    text-shadow:3px 3px 0 #fff,6px 6px 0 #FFD9E0; margin-bottom:6px;
+  }
+  .finish .msg{font-size:clamp(16px,2.4vw,21px); color:#5A4A42; max-width:620px; margin:0 auto 12px; line-height:1.6}
+  .stars{font-size:clamp(34px,7vw,52px); letter-spacing:6px; margin:6px 0 4px}
+  .score-box{
+    display:inline-block; background:#fff; border:5px solid var(--yellow-deep);
+    border-radius:30px; padding:16px 42px; margin:10px 0 16px;
+    box-shadow:0 8px 0 #FFE08A;
+  }
+  .score-box .lab{font-size:17px; color:#B8791A}
+  .score-box .val{font-size:clamp(38px,8vw,58px); font-weight:bold; color:#FF8C42; line-height:1.1}
+  .score-box .max{font-size:17px; color:#B8791A}
+  .pesan{
+    background:#FFF1C9; border:4px dashed #FFD24C; border-radius:26px;
+    padding:16px 24px; max-width:640px; margin:0 auto 18px; font-size:clamp(15px,2.2vw,19px);
+    line-height:1.6; color:#8A6A28;
+  }
+  #fx{position:fixed; inset:0; pointer-events:none; overflow:hidden; z-index:99}
+  .conf{position:absolute; font-size:26px; animation:fall linear forwards}
+  @keyframes fall{
+    0%{transform:translateY(-40px) rotate(0deg); opacity:1}
+    100%{transform:translateY(105vh) rotate(540deg); opacity:0}
+  }
+  .pop-star{
+    position:fixed; font-size:70px; z-index:100; pointer-events:none;
+    animation:starPop 1s ease-out forwards; left:50%; top:38%; transform:translate(-50%,-50%);
+  }
+  @keyframes starPop{
+    0%{transform:translate(-50%,-50%) scale(0) rotate(-40deg); opacity:0}
+    35%{transform:translate(-50%,-50%) scale(1.25) rotate(8deg); opacity:1}
+    100%{transform:translate(-50%,-50%) scale(1.9) rotate(20deg); opacity:0}
+  }
+  @media(max-width:560px){
+    #app{padding:18px 16px 24px; border-radius:26px}
+    .btn-big{font-size:21px; padding:16px 34px}
+    .opt{padding:12px 14px; gap:10px}
+    .opt .letter{width:38px;height:38px;font-size:19px}
+  }
+</style>
+</head>
+<body>
+<div id="app">
+  <span class="deco d1 floaty">☁️</span>
+  <span class="deco d2 floaty">⭐</span>
+  <span class="deco d3 floaty">🌼</span>
+  <span class="deco d4 floaty">🎈</span>
+  <span class="deco d5 floaty">🧸</span>
+  <span class="deco d6 floaty">🌈</span>
+
+  <section class="page active" id="page-1">
+    <div class="hero">
+      <h1>PETUALANGAN SEHARI-HARI</h1>
+      <div class="sub">Bantu Lala memilih tindakan yang baik!</div>
+      <div class="lala-wrap" id="art-cover"></div>
+      <div class="bubble">Hai! Aku <b>Lala</b>. Ayo ikut aku berpetualang hari ini! 🌟</div>
+      <div>
+        <button class="btn btn-big" onclick="startGame()">▶ MULAI PETUALANGAN</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="page" id="page-quiz">
+    <div class="topbar">
+      <div class="pill" id="pill-step">Kegiatan 1 dari 8</div>
+      <div class="prog-wrap"><div class="prog" id="prog"></div></div>
+      <div class="pill score" id="pill-score">⭐ 0 poin</div>
+    </div>
+    <div class="scene">
+      <div class="art" id="q-art"></div>
+      <div class="story">
+        <div class="situ" id="q-situ"></div>
+        <button class="listen" onclick="speakStory()">🔊 Dengarkan cerita</button>
+      </div>
+    </div>
+    <div class="ask" id="q-ask"></div>
+    <div class="options" id="q-options"></div>
+    <div class="feedback" id="q-feedback">
+      <span class="emo" id="fb-emo">🎉</span>
+      <span class="fb-text" id="fb-text"></span>
+    </div>
+    <div class="next-row">
+      <button class="btn next-btn" id="next-btn" onclick="nextStep()">LANJUT ➜</button>
+    </div>
+  </section>
+
+  <section class="page" id="page-end">
+    <div class="finish">
+      <h2>SELAMAT! 🎉</h2>
+      <div class="stars" id="end-stars">⭐⭐⭐</div>
+      <div class="msg">Kamu sudah membantu Lala melewati berbagai kegiatan sehari-hari.</div>
+      <div class="score-box">
+        <div class="lab">Skor Akhir Kamu</div>
+        <div class="val" id="end-score">0</div>
+        <div class="max">dari <span id="end-max">80</span> poin</div>
+      </div>
+      <div class="pesan">
+        💖 "Menjadi anak yang baik berarti belajar peduli, berbagi, bekerja sama, dan menghargai orang lain."
+      </div>
+      <div style="margin-bottom:14px" id="end-lala"></div>
+      <button class="btn btn-big" onclick="restartGame()">🔁 MAIN LAGI</button>
+    </div>
+  </section>
+</div>
+
+<div id="fx"></div>
+
+<script>
+/* =========================================================
+   SUARA (Text To Speech Bahasa Indonesia)
+   ========================================================= */
+function ucap(teks, rate){
+  rate = rate || 0.92;
+  if(!('speechSynthesis' in window)) return;
+  try{
+    window.speechSynthesis.cancel();
+    var u = new SpeechSynthesisUtterance(teks);
+    u.lang = 'id-ID';
+    u.rate = rate;
+    u.pitch = 1.15;
+    u.volume = 1;
+    var v = window.speechSynthesis.getVoices().find(function(v){return /id|Indo/i.test(v.lang);});
+    if(v) u.voice = v;
+    window.speechSynthesis.speak(u);
+  }catch(e){}
+}
+function stopSuara(){ if('speechSynthesis' in window) window.speechSynthesis.cancel(); }
+
+/* =========================================================
+   DATA SOAL
+   ========================================================= */
+var SKOR_PER_BENAR = 10;
+
+var SOAL = [
+  {
+    id:'rumah', label:'Kegiatan 1 dari 8',
+    situasi:'Lala selesai bermain. Banyak mainan berserakan di lantai.',
+    tanya:'Apa yang sebaiknya Lala lakukan?',
+    art:'rumah',
+    suaraSituasi:'Lala selesai bermain. Banyak mainan berserakan di lantai. Apa yang sebaiknya Lala lakukan?',
+    opsi:[
+      {teks:'Membiarkan mainan berserakan', benar:false},
+      {teks:'Merapikan mainan', benar:true,
+        fb:'Hebat! Lala belajar bertanggung jawab.', emo:'🌟',
+        fbSuara:'Hebat! Lala belajar bertanggung jawab.'},
+      {teks:'Menyuruh orang lain merapikannya', benar:false}
+    ]
+  },
+  {
+    id:'bagi', label:'Kegiatan 2 dari 8',
+    situasi:'Lala sedang makan camilan. Temannya belum mendapatkan camilan.',
+    tanya:'Apa yang sebaiknya Lala lakukan?',
+    art:'bagi',
+    suaraSituasi:'Lala sedang makan camilan. Temannya belum mendapatkan camilan. Apa yang sebaiknya Lala lakukan?',
+    opsi:[
+      {teks:'Berbagi dengan teman', benar:true,
+        fb:'Bagus! Berbagi membuat kita peduli kepada teman.', emo:'🍪',
+        fbSuara:'Bagus! Berbagi membuat kita peduli kepada teman.'},
+      {teks:'Menyembunyikan camilan', benar:false},
+      {teks:'Merebut makanan teman', benar:false}
+    ]
+  },
+  {
+    id:'giliran', label:'Kegiatan 3 dari 8',
+    situasi:'Lala ingin bermain perosotan, tetapi ada teman yang sedang bermain.',
+    tanya:'Apa yang sebaiknya Lala lakukan?',
+    art:'giliran',
+    suaraSituasi:'Lala ingin bermain perosotan, tetapi ada teman yang sedang bermain. Apa yang sebaiknya Lala lakukan?',
+    opsi:[
+      {teks:'Menyerobot', benar:false},
+      {teks:'Mendorong teman', benar:false},
+      {teks:'Menunggu giliran', benar:true,
+        fb:'Hebat! Menunggu giliran itu sabar dan sopan.', emo:'⏳',
+        fbSuara:'Hebat! Menunggu giliran itu sabar dan sopan.'}
+    ]
+  },
+  {
+    id:'maaf', label:'Kegiatan 4 dari 8',
+    situasi:'Lala tidak sengaja menjatuhkan pensil milik temannya.',
+    tanya:'Apa yang sebaiknya Lala lakukan?',
+    art:'maaf',
+    suaraSituasi:'Lala tidak sengaja menjatuhkan pensil milik temannya. Apa yang sebaiknya Lala lakukan?',
+    opsi:[
+      {teks:'Pergi begitu saja', benar:false},
+      {teks:'Mengatakan maaf dan membantu mengambil pensil', benar:true,
+        fb:'Bagus! Meminta maaf itu tanda anak yang baik.', emo:'🤝',
+        fbSuara:'Bagus! Meminta maaf itu tanda anak yang baik.'},
+      {teks:'Menyalahkan teman', benar:false}
+    ]
+  },
+  {
+    id:'tolong', label:'Kegiatan 5 dari 8',
+    situasi:'Teman Lala kesulitan membawa banyak buku.',
+    tanya:'Apa yang bisa dilakukan Lala?',
+    art:'tolong',
+    suaraSituasi:'Teman Lala kesulitan membawa banyak buku. Apa yang bisa dilakukan Lala?',
+    opsi:[
+      {teks:'Membantu membawa buku', benar:true,
+        fb:'Hebat! Menolong teman membuat hati senang.', emo:'📚',
+        fbSuara:'Hebat! Menolong teman membuat hati senang.'},
+      {teks:'Menertawakan teman', benar:false},
+      {teks:'Membiarkannya kesulitan', benar:false}
+    ]
+  },
+  {
+    id:'kerjasama', label:'Kegiatan 6 dari 8',
+    situasi:'Lala dan teman-temannya mendapat tugas menyusun balok bersama.',
+    tanya:'Apa yang sebaiknya mereka lakukan?',
+    art:'kerjasama',
+    suaraSituasi:'Lala dan teman-temannya mendapat tugas menyusun balok bersama. Apa yang sebaiknya mereka lakukan?',
+    opsi:[
+      {teks:'Berebut balok', benar:false},
+      {teks:'Bekerja sama', benar:true,
+        fb:'Bagus! Bekerja sama membuat pekerjaan jadi mudah.', emo:'🧱',
+        fbSuara:'Bagus! Bekerja sama membuat pekerjaan jadi mudah.'},
+      {teks:'Tidak mau berbagi', benar:false}
+    ]
+  },
+  {
+    id:'perasaan', label:'Kegiatan 7 dari 8',
+    situasi:'Teman Lala terlihat sedih karena mainannya rusak.',
+    tanya:'Bagaimana perasaan teman Lala?',
+    art:'sedih',
+    suaraSituasi:'Teman Lala terlihat sedih karena mainannya rusak. Bagaimana perasaan teman Lala?',
+    opsi:[
+      {teks:'😊 Senang', benar:false},
+      {teks:'😢 Sedih', benar:true,
+        fb:'Tepat! Teman Lala sedang sedih.', emo:'😢',
+        fbSuara:'Tepat! Teman Lala sedang sedih.',
+        lanjut:{
+          situasi:'Teman Lala masih sedih karena mainannya rusak.',
+          tanya:'Apa yang bisa Lala lakukan?',
+          art:'hibur',
+          suaraSituasi:'Teman Lala masih sedih karena mainannya rusak. Apa yang bisa Lala lakukan?',
+          opsi:[
+            {teks:'Menghibur teman', benar:true,
+              fb:'Hebat! Kamu peduli pada perasaan teman.', emo:'💗',
+              fbSuara:'Hebat! Kamu peduli pada perasaan teman.'},
+            {teks:'Menertawakan teman', benar:false},
+            {teks:'Pergi meninggalkannya', benar:false}
+          ]
+        }},
+      {teks:'😡 Marah', benar:false}
+    ]
+  },
+  {
+    id:'aturan', label:'Kegiatan 8 dari 8',
+    situasi:'Lala sedang berada di kelas. Guru meminta semua anak duduk dengan rapi sebelum kegiatan dimulai.',
+    tanya:'Apa yang sebaiknya Lala lakukan?',
+    art:'kelas',
+    suaraSituasi:'Lala sedang berada di kelas. Guru meminta semua anak duduk dengan rapi sebelum kegiatan dimulai. Apa yang sebaiknya Lala lakukan?',
+    opsi:[
+      {teks:'Berlari-lari', benar:false},
+      {teks:'Duduk dengan rapi', benar:true,
+        fb:'Hebat! Mengikuti aturan membuat kelas nyaman.', emo:'🏫',
+        fbSuara:'Hebat! Mengikuti aturan membuat kelas nyaman.'},
+      {teks:'Mengganggu teman', benar:false}
+    ]
+  }
+];
+
+/* =========================================================
+   ILUSTRASI SVG
+   ========================================================= */
+var SKIN='#F7D0AE', SKIN2='#E8B98C', HAIR='#4A3A32', HAIR2='#6B4F3F';
+
+function anak(x,y,s,opt){
+  opt = opt || {};
+  var baju = opt.baju || '#FFB6C1';
+  var rambut = opt.rambut || HAIR;
+  var hairstyle = opt.hairstyle || 'ponytail';
+  var ekspresi = opt.ekspresi || 'senang';
+  var kulit = opt.kulit || SKIN;
+  var lengan = opt.lengan || 'turun';
+  var rok = opt.rok || '#FF8FB1';
+
+  var g = [];
+  var bodyW = 46*s, bodyH = 52*s;
+  var headR = 27*s;
+  var headCY = y - bodyH - headR - 6*s;
+
+  var mata, mulut, pipi='';
+  if(ekspresi==='senang'){
+    mata = '<ellipse cx="'+(-9*s)+'" cy="'+(headCY-2*s)+'" rx="'+(3.6*s)+'" ry="'+(4.6*s)+'" fill="#3A2E28"/>'+
+           '<ellipse cx="'+(9*s)+'" cy="'+(headCY-2*s)+'" rx="'+(3.6*s)+'" ry="'+(4.6*s)+'" fill="#3A2E28"/>'+
+           '<circle cx="'+(-8*s)+'" cy="'+(headCY-3.4*s)+'" r="'+(1.3*s)+'" fill="#fff"/>'+
+           '<circle cx="'+(10*s)+'" cy="'+(headCY-3.4*s)+'" r="'+(1.3*s)+'" fill="#fff"/>';
+    mulut = '<path d="M '+(-8*s)+' '+(headCY+10*s)+' Q 0 '+(headCY+18*s)+' '+(8*s)+' '+(headCY+10*s)+'" stroke="#B5563F" stroke-width="'+(2.6*s)+'" fill="none" stroke-linecap="round"/>';
+    pipi = '<circle cx="'+(-16*s)+'" cy="'+(headCY+6*s)+'" r="'+(4.2*s)+'" fill="#FFB3C6" opacity=".7"/>'+
+           '<circle cx="'+(16*s)+'" cy="'+(headCY+6*s)+'" r="'+(4.2*s)+'" fill="#FFB3C6" opacity=".7"/>';
+  } else if(ekspresi==='sedih'){
+    mata = '<ellipse cx="'+(-9*s)+'" cy="'+(headCY+1*s)+'" rx="'+(3.4*s)+'" ry="'+(3*s)+'" fill="#3A2E28"/>'+
+           '<ellipse cx="'+(9*s)+'" cy="'+(headCY+1*s)+'" rx="'+(3.4*s)+'" ry="'+(3*s)+'" fill="#3A2E28"/>'+
+           '<path d="M '+(-14*s)+' '+(headCY-8*s)+' Q '+(-9*s)+' '+(headCY-11*s)+' '+(-4*s)+' '+(headCY-8*s)+'" stroke="#5A4A42" stroke-width="'+(2*s)+'" fill="none" stroke-linecap="round"/>'+
+           '<path d="M '+(4*s)+' '+(headCY-8*s)+' Q '+(9*s)+' '+(headCY-11*s)+' '+(14*s)+' '+(headCY-8*s)+'" stroke="#5A4A42" stroke-width="'+(2*s)+'" fill="none" stroke-linecap="round"/>';
+    mulut = '<path d="M '+(-7*s)+' '+(headCY+15*s)+' Q 0 '+(headCY+9*s)+' '+(7*s)+' '+(headCY+15*s)+'" stroke="#B5563F" stroke-width="'+(2.6*s)+'" fill="none" stroke-linecap="round"/>';
+    pipi = '<circle cx="'+(-15*s)+'" cy="'+(headCY+7*s)+'" r="'+(3.4*s)+'" fill="#FFA8B8" opacity=".55"/>'+
+           '<circle cx="'+(15*s)+'" cy="'+(headCY+7*s)+'" r="'+(3.4*s)+'" fill="#FFA8B8" opacity=".55"/>';
+    g.push('<ellipse cx="'+(-11*s)+'" cy="'+(headCY+8*s)+'" rx="'+(2.4*s)+'" ry="'+(3.6*s)+'" fill="#8ED0F0" opacity=".85"/>');
+  } else if(ekspresi==='kaget'){
+    mata = '<circle cx="'+(-9*s)+'" cy="'+(headCY-1*s)+'" r="'+(4.4*s)+'" fill="#3A2E28"/>'+
+           '<circle cx="'+(9*s)+'" cy="'+(headCY-1*s)+'" r="'+(4.4*s)+'" fill="#3A2E28"/>'+
+           '<circle cx="'+(-8*s)+'" cy="'+(headCY-2.6*s)+'" r="'+(1.5*s)+'" fill="#fff"/>'+
+           '<circle cx="'+(10*s)+'" cy="'+(headCY-2.6*s)+'" r="'+(1.5*s)+'" fill="#fff"/>';
+    mulut = '<ellipse cx="0" cy="'+(headCY+13*s)+'" rx="'+(5*s)+'" ry="'+(6*s)+'" fill="#B5563F"/>';
+  } else if(ekspresi==='bangga'){
+    mata = '<path d="M '+(-13*s)+' '+(headCY)+' Q '+(-9*s)+' '+(headCY-6*s)+' '+(-5*s)+' '+(headCY)+'" stroke="#3A2E28" stroke-width="'+(3*s)+'" fill="none" stroke-linecap="round"/>'+
+           '<path d="M '+(5*s)+' '+(headCY)+' Q '+(9*s)+' '+(headCY-6*s)+' '+(13*s)+' '+(headCY)+'" stroke="#3A2E28" stroke-width="'+(3*s)+'" fill="none" stroke-linecap="round"/>';
+    mulut = '<path d="M '+(-8*s)+' '+(headCY+9*s)+' Q 0 '+(headCY+18*s)+' '+(8*s)+' '+(headCY+9*s)+'" stroke="#B5563F" stroke-width="'+(2.6*s)+'" fill="none" stroke-linecap="round"/>';
+    pipi = '<circle cx="'+(-16*s)+'" cy="'+(headCY+6*s)+'" r="'+(4.4*s)+'" fill="#FFB3C6" opacity=".75"/>'+
+           '<circle cx="'+(16*s)+'" cy="'+(headCY+6*s)+'" r="'+(4.4*s)+'" fill="#FFB3C6" opacity=".75"/>';
+  } else {
+    mata = '<ellipse cx="'+(-9*s)+'" cy="'+(headCY-1*s)+'" rx="'+(3.4*s)+'" ry="'+(4*s)+'" fill="#3A2E28"/>'+
+           '<ellipse cx="'+(9*s)+'" cy="'+(headCY-1*s)+'" rx="'+(3.4*s)+'" ry="'+(4*s)+'" fill="#3A2E28"/>';
+    mulut = '<path d="M '+(-6*s)+' '+(headCY+13*s)+' Q 0 '+(headCY+9*s)+' '+(6*s)+' '+(headCY+13*s)+'" stroke="#B5563F" stroke-width="'+(2.4*s)+'" fill="none" stroke-linecap="round"/>';
+  }
+  var rambutSvg='';
+  if(hairstyle==='ponytail'){
+    rambutSvg = '<circle cx="'+(-26*s)+'" cy="'+(headCY+4*s)+'" r="'+(11*s)+'" fill="'+rambut+'"/>'+
+      '<circle cx="'+(26*s)+'" cy="'+(headCY+4*s)+'" r="'+(11*s)+'" fill="'+rambut+'"/>'+
+      '<path d="M '+(-27*s)+' '+(headCY)+' A '+(27*s)+' '+(27*s)+' 0 0 1 '+(27*s)+' '+(headCY)+' Q '+(18*s)+' '+(headCY-16*s)+' 0 '+(headCY-16*s)+' Q '+(-18*s)+' '+(headCY-16*s)+' '+(-27*s)+' '+(headCY)+' Z" fill="'+rambut+'"/>'+
+      '<path d="M '+(-27*s)+' '+(headCY-2*s)+' Q '+(-30*s)+' '+(headCY+10*s)+' '+(-22*s)+' '+(headCY+16*s)+' Q '+(-16*s)+' '+(headCY+8*s)+' '+(-18*s)+' '+(headCY-2*s)+' Z" fill="'+rambut+'"/>';
+  } else if(hairstyle==='pendek'){
+    rambutSvg = '<path d="M '+(-27*s)+' '+(headCY+2*s)+' A '+(27*s)+' '+(27*s)+' 0 0 1 '+(27*s)+' '+(headCY+2*s)+' Q '+(20*s)+' '+(headCY-18*s)+' 0 '+(headCY-18*s)+' Q '+(-20*s)+' '+(headCY-18*s)+' '+(-27*s)+' '+(headCY+2*s)+' Z" fill="'+rambut+'"/>';
+  } else {
+    rambutSvg = '<circle cx="0" cy="'+(headCY-30*s)+'" r="'+(10*s)+'" fill="'+rambut+'"/>'+
+      '<path d="M '+(-27*s)+' '+(headCY+2*s)+' A '+(27*s)+' '+(27*s)+' 0 0 1 '+(27*s)+' '+(headCY+2*s)+' Q '+(18*s)+' '+(headCY-16*s)+' 0 '+(headCY-16*s)+' Q '+(-18*s)+' '+(headCY-16*s)+' '+(-27*s)+' '+(headCY+2*s)+' Z" fill="'+rambut+'"/>';
+  }
+  var lenganSvg='';
+  var lenganY = y - bodyH + 10*s;
+  if(lengan==='angkat'){
+    lenganSvg = '<path d="M '+(-20*s)+' '+lenganY+' Q '+(-34*s)+' '+(lenganY-14*s)+' '+(-30*s)+' '+(lenganY-30*s)+'" stroke="'+kulit+'" stroke-width="'+(11*s)+'" fill="none" stroke-linecap="round"/>'+
+      '<path d="M '+(20*s)+' '+lenganY+' Q '+(34*s)+' '+(lenganY-14*s)+' '+(30*s)+' '+(lenganY-30*s)+'" stroke="'+kulit+'" stroke-width="'+(11*s)+'" fill="none" stroke-linecap="round"/>';
+  } else if(lengan==='depan'){
+    lenganSvg = '<path d="M '+(-20*s)+' '+lenganY+' Q '+(-30*s)+' '+(lenganY+12*s)+' '+(-14*s)+' '+(lenganY+20*s)+'" stroke="'+kulit+'" stroke-width="'+(11*s)+'" fill="none" stroke-linecap="round"/>'+
+      '<path d="M '+(20*s)+' '+lenganY+' Q '+(30*s)+' '+(lenganY+12*s)+' '+(14*s)+' '+(lenganY+20*s)+'" stroke="'+kulit+'" stroke-width="'+(11*s)+'" fill="none" stroke-linecap="round"/>';
+  } else if(lengan==='buku'){
+    lenganSvg = '<path d="M '+(-20*s)+' '+lenganY+' Q '+(-28*s)+' '+(lenganY+14*s)+' '+(-12*s)+' '+(lenganY+18*s)+'" stroke="'+kulit+'" stroke-width="'+(11*s)+'" fill="none" stroke-linecap="round"/>'+
+      '<path d="M '+(20*s)+' '+lenganY+' Q '+(28*s)+' '+(lenganY+14*s)+' '+(12*s)+' '+(lenganY+18*s)+'" stroke="'+kulit+'" stroke-width="'+(11*s)+'" fill="none" stroke-linecap="round"/>'+
+      '<rect x="'+(-16*s)+'" y="'+(lenganY+12*s)+'" width="'+(32*s)+'" height="'+(20*s)+'" rx="'+(3*s)+'" fill="#7EC4E8" stroke="#4FA8D8" stroke-width="'+(2*s)+'"/>'+
+      '<rect x="'+(-16*s)+'" y="'+(lenganY+12*s)+'" width="'+(32*s)+'" height="'+(6*s)+'" rx="'+(3*s)+'" fill="#FFE59D"/>';
+  } else {
+    lenganSvg = '<path d="M '+(-20*s)+' '+lenganY+' Q '+(-26*s)+' '+(lenganY+16*s)+' '+(-22*s)+' '+(lenganY+26*s)+'" stroke="'+kulit+'" stroke-width="'+(11*s)+'" fill="none" stroke-linecap="round"/>'+
+      '<path d="M '+(20*s)+' '+lenganY+' Q '+(26*s)+' '+(lenganY+16*s)+' '+(22*s)+' '+(lenganY+26*s)+'" stroke="'+kulit+'" stroke-width="'+(11*s)+'" fill="none" stroke-linecap="round"/>';
+  }
+  g.push('<g transform="translate('+x+',0)">'+
+    '<rect x="'+(-15*s)+'" y="'+(y-14*s)+'" width="'+(10*s)+'" height="'+(16*s)+'" rx="'+(4*s)+'" fill="'+SKIN2+'"/>'+
+    '<rect x="'+(5*s)+'" y="'+(y-14*s)+'" width="'+(10*s)+'" height="'+(16*s)+'" rx="'+(4*s)+'" fill="'+SKIN2+'"/>'+
+    '<ellipse cx="'+(-10*s)+'" cy="'+(y+1*s)+'" rx="'+(9*s)+'" ry="'+(5*s)+'" fill="#5D4037"/>'+
+    '<ellipse cx="'+(10*s)+'" cy="'+(y+1*s)+'" rx="'+(9*s)+'" ry="'+(5*s)+'" fill="#5D4037"/>'+
+    '<rect x="'+(-bodyW/2)+'" y="'+(y-bodyH-2*s)+'" width="'+bodyW+'" height="'+bodyH+'" rx="'+(12*s)+'" fill="'+baju+'"/>'+
+    '<rect x="'+(-bodyW/2)+'" y="'+(y-bodyH-2*s)+'" width="'+bodyW+'" height="'+(12*s)+'" rx="'+(6*s)+'" fill="#fff" opacity=".55"/>'+
+    '<path d="M '+(-bodyW/2-4*s)+' '+(y-6*s)+' L '+(bodyW/2+4*s)+' '+(y-6*s)+' L '+(bodyW/2+10*s)+' '+(y+6*s)+' L '+(-bodyW/2-10*s)+' '+(y+6*s)+' Z" fill="'+rok+'"/>'+
+    '<rect x="'+(-6*s)+'" y="'+(y-bodyH-8*s)+'" width="'+(12*s)+'" height="'+(10*s)+'" rx="'+(4*s)+'" fill="'+SKIN2+'"/>'+
+    lenganSvg+
+    '<circle cx="0" cy="'+headCY+'" r="'+headR+'" fill="'+kulit+'"/>'+
+    '<ellipse cx="'+(-26*s)+'" cy="'+(headCY+2*s)+'" rx="'+(5*s)+'" ry="'+(7*s)+'" fill="'+kulit+'"/>'+
+    '<ellipse cx="'+(26*s)+'" cy="'+(headCY+2*s)+'" rx="'+(5*s)+'" ry="'+(7*s)+'" fill="'+kulit+'"/>'+
+    rambutSvg+mata+pipi+mulut+
+    '</g>');
+  return g.join('');
+}
+function latarRumah(){
+  return '<rect x="0" y="0" width="320" height="240" rx="20" fill="#FFF3E0"/>'+
+    '<rect x="0" y="170" width="320" height="70" fill="#E8C9A0"/>'+
+    '<rect x="0" y="166" width="320" height="8" fill="#C9A87C"/>'+
+    '<rect x="24" y="34" width="76" height="62" rx="8" fill="#BFE9FF" stroke="#A8D8EA" stroke-width="6"/>'+
+    '<line x1="62" y1="34" x2="62" y2="96" stroke="#A8D8EA" stroke-width="5"/>'+
+    '<line x1="24" y1="65" x2="100" y2="65" stroke="#A8D8EA" stroke-width="5"/>'+
+    '<circle cx="44" cy="52" r="9" fill="#FFE59D" opacity=".9"/>'+
+    '<rect x="220" y="60" width="80" height="14" rx="6" fill="#DEB887"/>'+
+    '<rect x="228" y="34" width="18" height="26" rx="4" fill="#FFB6C1"/>'+
+    '<rect x="252" y="40" width="16" height="20" rx="4" fill="#A8D8EA"/>'+
+    '<rect x="274" y="36" width="18" height="24" rx="4" fill="#B8E6B8"/>'+
+    '<circle cx="60" cy="205" r="11" fill="#FFD24C" stroke="#E0A800" stroke-width="2"/>'+
+    '<rect x="92" y="196" width="24" height="16" rx="4" fill="#FF8FB1"/>'+
+    '<rect x="96" y="184" width="16" height="14" rx="4" fill="#7EC4E8"/>'+
+    '<circle cx="140" cy="208" r="9" fill="#B8E6B8" stroke="#7FD67F" stroke-width="2"/>'+
+    '<rect x="168" y="198" width="28" height="14" rx="4" fill="#D9C2F0"/>'+
+    '<circle cx="228" cy="207" r="10" fill="#FFC49B" stroke="#F09A62" stroke-width="2"/>'+
+    '<rect x="168" y="198" width="28" height="14" rx="4" fill="#D9C2F0"/>'+
+    '<circle cx="228" cy="207" r="10" fill="#FFC49B" stroke="#F09A62" stroke-width="2"/>'+
+    '<rect x="252" y="196" width="20" height="18" rx="4" fill="#A8D8EA"/>'+
+    '<path d="M 300 214 L 312 190 L 318 214 Z" fill="#FFB347"/>';
+}
+function artRumah(){
+  return '<svg viewBox="0 0 320 240" xmlns="http://www.w3.org/2000/svg">'+latarRumah()+
+    anak(150, 200, 1.35, {baju:'#FFB6C1', rok:'#FF8FB1', hairstyle:'ponytail', ekspresi:'bingung', lengan:'depan'})+
+    '<ellipse cx="212" cy="92" rx="34" ry="24" fill="#fff" stroke="#A8D8EA" stroke-width="3"/>'+
+    '<circle cx="190" cy="122" r="6" fill="#fff" stroke="#A8D8EA" stroke-width="3"/>'+
+    '<text x="212" y="102" font-size="26" text-anchor="middle">🤔</text></svg>';
+}
+function artBagi(){
+  return '<svg viewBox="0 0 340 240" xmlns="http://www.w3.org/2000/svg">'+
+    '<rect x="0" y="0" width="340" height="240" rx="20" fill="#FFF7E8"/>'+
+    '<rect x="0" y="172" width="340" height="68" fill="#F2DFC0"/>'+
+    '<rect x="0" y="168" width="340" height="8" fill="#DCBF97"/>'+
+    '<rect x="90" y="150" width="170" height="16" rx="8" fill="#DEB887"/>'+
+    '<rect x="104" y="166" width="12" height="40" fill="#C9A87C"/>'+
+    '<rect x="234" y="166" width="12" height="40" fill="#C9A87C"/>'+
+    '<ellipse cx="150" cy="146" rx="30" ry="9" fill="#fff" stroke="#E0D6C8" stroke-width="3"/>'+
+    '<circle cx="142" cy="140" r="8" fill="#FFC49B"/>'+
+    '<circle cx="160" cy="140" r="8" fill="#FFC49B"/>'+
+    '<ellipse cx="238" cy="146" rx="26" ry="8" fill="#fff" stroke="#E0D6C8" stroke-width="3"/>'+
+    anak(112, 208, 1.15, {baju:'#FFB6C1', rok:'#FF8FB1', hairstyle:'ponytail', ekspresi:'senang', lengan:'depan'})+
+    anak(262, 208, 1.15, {baju:'#A8D8EA', rok:'#7EC4E8', hairstyle:'pendek', ekspresi:'kaget', lengan:'turun', rambut:HAIR2})+
+    '<text x="212" y="120" font-size="22" text-anchor="middle">🍪</text></svg>';
+}
+function artGiliran(){
+  return '<svg viewBox="0 0 340 250" xmlns="http://www.w3.org/2000/svg">'+
+    '<rect x="0" y="0" width="340" height="250" rx="20" fill="#E9F7FF"/>'+
+    '<ellipse cx="60" cy="40" rx="34" ry="18" fill="#fff"/>'+
+    '<ellipse cx="88" cy="36" rx="24" ry="16" fill="#fff"/>'+
+    '<ellipse cx="280" cy="54" rx="28" ry="15" fill="#fff"/>'+
+    '<rect x="0" y="190" width="340" height="60" fill="#B8E6B8"/>'+
+    '<rect x="0" y="186" width="340" height="8" fill="#96D896"/>'+
+    '<path d="M 210 96 L 300 196 L 176 196 Z" fill="#FFD24C" stroke="#E0A800" stroke-width="4" stroke-linejoin="round"/>'+
+    '<rect x="206" y="88" width="54" height="12" rx="6" fill="#FF8FB1"/>'+
+    '<rect x="212" y="96" width="12" height="100" fill="#FFB347"/>'+
+    '<rect x="256" y="120" width="12" height="76" fill="#FFB347"/>'+
+    '<line x1="200" y1="70" x2="200" y2="100" stroke="#C9A87C" stroke-width="6" stroke-linecap="round"/>'+
+    anak(232, 118, 0.85, {baju:'#D9C2F0', rok:'#BFA0E0', hairstyle:'cepol', ekspresi:'senang', lengan:'angkat'})+
+    anak(150, 200, 1.15, {baju:'#FFB6C1', rok:'#FF8FB1', hairstyle:'ponytail', ekspresi:'senang', lengan:'turun'})+
+    '<text x="118" y="120" font-size="22" text-anchor="middle">⏳</text></svg>';
+}
+function artMaaf(){
+  return '<svg viewBox="0 0 340 240" xmlns="http://www.w3.org/2000/svg">'+
+    '<rect x="0" y="0" width="340" height="240" rx="20" fill="#FFF7F0"/>'+
+    '<rect x="0" y="176" width="340" height="64" fill="#EADBC8"/>'+
+    '<rect x="0" y="172" width="340" height="8" fill="#D6C3A8"/>'+
+    '<rect x="30" y="110" width="120" height="14" rx="7" fill="#DEB887"/>'+
+    '<rect x="42" y="124" width="11" height="52" fill="#C9A87C"/>'+
+    '<rect x="126" y="124" width="11" height="52" fill="#C9A87C"/>'+
+    '<g transform="rotate(-24 190 196)">'+
+    '<rect x="176" y="190" width="42" height="9" rx="4" fill="#FFD24C" stroke="#E0A800" stroke-width="2"/>'+
+    '<path d="M 218 190 L 228 194.5 L 218 199 Z" fill="#F7D0AE"/>'+
+    '<path d="M 224 192.5 L 228 194.5 L 224 196.5 Z" fill="#5A4A42"/></g>'+
+    anak(110, 204, 1.12, {baju:'#FFB6C1', rok:'#FF8FB1', hairstyle:'ponytail', ekspresi:'sedih', lengan:'depan'})+
+    anak(258, 204, 1.12, {baju:'#A8D8EA', rok:'#7EC4E8', hairstyle:'pendek', ekspresi:'senang', lengan:'turun', rambut:HAIR2})+
+    '<ellipse cx="184" cy="86" rx="40" ry="24" fill="#fff" stroke="#A8D8EA" stroke-width="3"/>'+
+    '<text x="184" y="94" font-size="18" text-anchor="middle" font-family="sans-serif" font-weight="bold" fill="#4A6E82">Maaf ya</text>'+
+    '<circle cx="162" cy="114" r="5" fill="#fff" stroke="#A8D8EA" stroke-width="3"/>'+
+    '<circle cx="150" cy="126" r="3.5" fill="#fff" stroke="#A8D8EA" stroke-width="3"/></svg>';
+}
+function artTolong(){
+  return '<svg viewBox="0 0 340 250" xmlns="http://www.w3.org/2000/svg">'+
+    '<rect x="0" y="0" width="340" height="250" rx="20" fill="#EEF9FF"/>'+
+    '<rect x="0" y="182" width="340" height="68" fill="#DDEBF5"/>'+
+    '<rect x="0" y="178" width="340" height="8" fill="#C4DCEB"/>'+
+    '<rect x="250" y="30" width="66" height="54" rx="8" fill="#BFE9FF" stroke="#A8D8EA" stroke-width="5"/>'+
+    anak(258, 216, 1.18, {baju:'#D9C2F0', rok:'#BFA0E0', hairstyle:'cepol', ekspresi:'kaget', lengan:'buku', rambut:HAIR2})+
+    '<g transform="translate(240,140)">'+
+    '<rect x="0" y="34" width="52" height="12" rx="3" fill="#FFB347" stroke="#E08A20" stroke-width="2"/>'+
+    '<rect x="4" y="20" width="52" height="12" rx="3" fill="#7EC4E8" stroke="#4FA8D8" stroke-width="2"/>'+
+    '<rect x="-2" y="6" width="52" height="12" rx="3" fill="#B8E6B8" stroke="#7FD67F" stroke-width="2"/></g>'+
+    anak(96, 216, 1.22, {baju:'#FFB6C1', rok:'#FF8FB1', hairstyle:'ponytail', ekspresi:'senang', lengan:'angkat'})+
+    '<g transform="translate(72,128)">'+
+    '<rect x="0" y="20" width="48" height="11" rx="3" fill="#FF8FB1" stroke="#E1568C" stroke-width="2"/>'+
+    '<rect x="4" y="8" width="48" height="11" rx="3" fill="#FFD24C" stroke="#E0A800" stroke-width="2"/></g>'+
+    '<text x="176" y="80" font-size="22" text-anchor="middle">💪</text></svg>';
+}
+function artKerjasama(){
+  return '<svg viewBox="0 0 360 250" xmlns="http://www.w3.org/2000/svg">'+
+    '<rect x="0" y="0" width="360" height="250" rx="20" fill="#FFF6EC"/>'+
+    '<rect x="0" y="184" width="360" height="66" fill="#EADBC8"/>'+
+    '<rect x="0" y="180" width="360" height="8" fill="#D6C3A8"/>'+
+    '<g transform="translate(140,60)">'+
+    '<rect x="0" y="92" width="44" height="26" rx="5" fill="#FFB6C1" stroke="#E1568C" stroke-width="2.5"/>'+
+    '<rect x="48" y="92" width="44" height="26" rx="5" fill="#A8D8EA" stroke="#4FA8D8" stroke-width="2.5"/>'+
+    '<rect x="24" y="64" width="44" height="26" rx="5" fill="#FFD24C" stroke="#E0A800" stroke-width="2.5"/>'+
+    '<rect x="24" y="36" width="44" height="26" rx="5" fill="#B8E6B8" stroke="#7FD67F" stroke-width="2.5"/>'+
+    '<polygon points="46,10 70,36 22,36" fill="#FF8FB1" stroke="#E1568C" stroke-width="2.5"/></g>'+
+    anak(72, 214, 1.1, {baju:'#FFB6C1', rok:'#FF8FB1', hairstyle:'ponytail', ekspresi:'senang', lengan:'angkat'})+
+    anak(292, 214, 1.1, {baju:'#A8D8EA', rok:'#7EC4E8', hairstyle:'pendek', ekspresi:'senang', lengan:'angkat', rambut:HAIR2})+
+    anak(182, 224, 0.95, {baju:'#D9C2F0', rok:'#BFA0E0', hairstyle:'cepol', ekspresi:'senang', lengan:'angkat'})+
+    '<text x="182" y="30" font-size="22" text-anchor="middle">🤝</text></svg>';
+}
+function artSedih(){
+  return '<svg viewBox="0 0 340 240" xmlns="http://www.w3.org/2000/svg">'+
+    '<rect x="0" y="0" width="340" height="240" rx="20" fill="#F3F0FF"/>'+
+    '<rect x="0" y="176" width="340" height="64" fill="#E2DAF3"/>'+
+    '<rect x="0" y="172" width="340" height="8" fill="#CFC3E8"/>'+
+    '<g transform="translate(196,196)">'+
+    '<circle cx="0" cy="0" r="14" fill="#FF8FB1" stroke="#E1568C" stroke-width="2.5"/>'+
+    '<circle cx="8" cy="0" r="5" fill="#fff" opacity=".7"/>'+
+    '<path d="M 14 0 L 30 -4 L 26 6 Z" fill="#FFD24C" stroke="#E0A800" stroke-width="2"/>'+
+    '<line x1="26" y1="-4" x2="36" y2="-12" stroke="#C9A87C" stroke-width="2" stroke-dasharray="3 3"/></g>'+
+    anak(248, 206, 1.2, {baju:'#A8D8EA', rok:'#7EC4E8', hairstyle:'pendek', ekspresi:'sedih', lengan:'turun', rambut:HAIR2})+
+    anak(104, 206, 1.2, {baju:'#FFB6C1', rok:'#FF8FB1', hairstyle:'ponytail', ekspresi:'sedih', lengan:'depan'})+
+    '<text x="176" y="66" font-size="24" text-anchor="middle">💧</text>'+
+    '<ellipse cx="176" cy="118" rx="46" ry="24" fill="#fff" stroke="#D9C2F0" stroke-width="3"/>'+
+    '<text x="176" y="126" font-size="17" text-anchor="middle" font-family="sans-serif" font-weight="bold" fill="#7C5CA8">Aku sedih…</text>'+
+    '<circle cx="154" cy="144" r="5" fill="#fff" stroke="#D9C2F0" stroke-width="3"/>'+
+    '<circle cx="142" cy="156" r="3.5" fill="#fff" stroke="#D9C2F0" stroke-width="3"/></svg>';
+}
+function artHibur(){
+  return '<svg viewBox="0 0 340 240" xmlns="http://www.w3.org/2000/svg">'+
+    '<rect x="0" y="0" width="340" height="240" rx="20" fill="#FFF4F8"/>'+
+    '<rect x="0" y="178" width="340" height="62" fill="#F3DDE6"/>'+
+    '<rect x="0" y="174" width="340" height="8" fill="#E4C6D4"/>'+
+    anak(250, 208, 1.15, {baju:'#A8D8EA', rok:'#7EC4E8', hairstyle:'pendek', ekspresi:'sedih', lengan:'turun', rambut:HAIR2})+
+    anak(100, 208, 1.22, {baju:'#FFB6C1', rok:'#FF8FB1', hairstyle:'ponytail', ekspresi:'senang', lengan:'depan'})+
+    '<g transform="translate(146,150)">'+
+    '<circle cx="0" cy="0" r="14" fill="#FFD24C" stroke="#E0A800" stroke-width="2.5"/>'+
+    '<circle cx="-5" cy="-4" r="2.5" fill="#5A4A42"/>'+
+    '<circle cx="5" cy="-4" r="2.5" fill="#5A4A42"/>'+
+    '<path d="M -5 5 Q 0 10 5 5" stroke="#B5563F" stroke-width="2.2" fill="none" stroke-linecap="round"/>'+
+    '<circle cx="-12" cy="-10" r="5" fill="#FFD24C" stroke="#E0A800" stroke-width="2"/>'+
+    '<circle cx="12" cy="-10" r="5" fill="#FFD24C" stroke="#E0A800" stroke-width="2"/></g>'+
+    '<text x="196" y="70" font-size="24" text-anchor="middle">💗</text>'+
+    '<text x="88" y="96" font-size="22" text-anchor="middle">🎈</text></svg>';
+}
+function artKelas(){
+  return '<svg viewBox="0 0 360 250" xmlns="http://www.w3.org/2000/svg">'+
+    '<rect x="0" y="0" width="360" height="250" rx="20" fill="#FFFDF0"/>'+
+    '<rect x="24" y="26" width="150" height="78" rx="8" fill="#7FD67F" stroke="#C9A87C" stroke-width="7"/>'+
+    '<text x="99" y="62" font-size="20" text-anchor="middle" fill="#fff" font-family="sans-serif" font-weight="bold">ABC</text>'+
+    '<text x="99" y="88" font-size="18" text-anchor="middle" fill="#fff" font-family="sans-serif">123</text>'+
+    '<rect x="0" y="184" width="360" height="66" fill="#EADBC8"/>'+
+    '<rect x="0" y="180" width="360" height="8" fill="#D6C3A8"/>'+
+    anak(302, 196, 1.25, {baju:'#D9C2F0', rok:'#BFA0E0', hairstyle:'cepol', ekspresi:'senang', lengan:'angkat', rambut:'#3A2E28'})+
+    '<rect x="120" y="176" width="86" height="14" rx="7" fill="#DEB887"/>'+
+    '<rect x="128" y="190" width="10" height="30" fill="#C9A87C"/>'+
+    '<rect x="188" y="190" width="10" height="30" fill="#C9A87C"/>'+
+    '<g transform="translate(0,26)">'+
+    anak(163, 176, 1.0, {baju:'#FFB6C1', rok:'#FF8FB1', hairstyle:'ponytail', ekspresi:'senang', lengan:'depan'})+'</g>'+
+    '<text x="250" y="70" font-size="20" text-anchor="middle">🙋‍♀️</text>'+
+    '<g opacity=".95">'+
+    anak(60, 196, 1.0, {baju:'#B8E6B8', rok:'#7FD67F', hairstyle:'pendek', ekspresi:'senang', lengan:'turun', rambut:HAIR2})+'</g></svg>';
+}
+function artCover(){
+  return '<svg viewBox="0 0 340 260" xmlns="http://www.w3.org/2000/svg">'+
+    '<ellipse cx="170" cy="236" rx="120" ry="20" fill="#FFD9E0" opacity=".7"/>'+
+    '<circle cx="60" cy="52" r="16" fill="#FFE59D" opacity=".9"/>'+
+    '<circle cx="292" cy="70" r="12" fill="#BFE9FF" opacity=".9"/>'+
+    '<text x="42" y="150" font-size="28">🌈</text>'+
+    '<text x="286" y="176" font-size="28">🎈</text>'+
+    anak(170, 226, 1.65, {baju:'#FFB6C1', rok:'#FF8FB1', hairstyle:'ponytail', ekspresi:'bangga', lengan:'angkat'})+
+    '</svg>';
+}
+
+function artEnd(){
+  return '<svg viewBox="0 0 320 210" xmlns="http://www.w3.org/2000/svg">'+
+    '<ellipse cx="160" cy="196" rx="110" ry="16" fill="#FFE59D" opacity=".8"/>'+
+    '<text x="26" y="70" font-size="26">⭐</text>'+
+    '<text x="272" y="86" font-size="26">🌟</text>'+
+    '<text x="52" y="150" font-size="24">💖</text>'+
+    '<text x="256" y="160" font-size="24">🎉</text>'+
+    anak(160, 186, 1.4, {baju:'#FFB6C1', rok:'#FF8FB1', hairstyle:'ponytail', ekspresi:'bangga', lengan:'angkat'})+
+    '</svg>';
+}
+var ART = {rumah:artRumah, bagi:artBagi, giliran:artGiliran, maaf:artMaaf,
+           tolong:artTolong, kerjasama:artKerjasama, sedih:artSedih,
+           hibur:artHibur, kelas:artKelas, cover:artCover, end:artEnd};
+
+/* =========================================================
+   STATE GAME
+   ========================================================= */
+var idx = 0;
+var skor = 0;
+var subStep = null;
+var terkunci = false;
+
+function showPage(id){
+  var pages = document.querySelectorAll('.page');
+  for(var i=0;i<pages.length;i++) pages[i].classList.remove('active');
+  document.getElementById(id).classList.add('active');
+}
+
+function startGame(){
+  idx = 0; skor = 0; subStep = null;
+  updateSkor();
+  showPage('page-quiz');
+  renderSoal();
+  ucap('Ayo mulai petualangan! Bantu Lala memilih tindakan yang baik.');
+}
+function renderSoal(){
+  var s = SOAL[idx];
+  var data = subStep ? subStep : s;
+
+  document.getElementById('pill-step').textContent = s.label;
+  document.getElementById('q-situ').textContent = data.situasi;
+  document.getElementById('q-ask').textContent = data.tanya;
+  document.getElementById('q-art').innerHTML = ART[data.art] ? ART[data.art]() : '';
+
+  var total = SOAL.length;
+  var progresSekarang = subStep ? idx + 0.5 : idx;
+  document.getElementById('prog').style.width = ((progresSekarang/total)*100).toFixed(1) + '%';
+
+  var wrap = document.getElementById('q-options');
+  wrap.innerHTML = '';
+  terkunci = false;
+
+  var huruf = ['A','B','C'];
+  data.opsi.forEach(function(o,i){
+    var b = document.createElement('button');
+    b.className = 'opt';
+    b.innerHTML = '<span class="letter">'+huruf[i]+'</span><span>'+o.teks+'</span>';
+    b.dataset.index = i;
+    b.onclick = function(){ pilihJawaban(b, o, data); };
+    wrap.appendChild(b);
+  });
+  var fb = document.getElementById('q-feedback');
+  fb.className = 'feedback';
+  fb.querySelector('#fb-text').textContent = '';
+  document.getElementById('next-btn').classList.remove('show');
+  document.getElementById('next-btn').textContent = 'LANJUT ➜';
+
+  setTimeout(function(){ ucap(data.suaraSituasi); }, 320);
+}
+
+function pilihJawaban(btn, opsi, data){
+  if(terkunci) return;
+  terkunci = true;
+
+  var semua = document.querySelectorAll('#q-options .opt');
+  for(var i=0;i<semua.length;i++) semua[i].disabled = true;
+
+  var fb = document.getElementById('q-feedback');
+  var fbText = document.getElementById('fb-text');
+  var fbEmo = document.getElementById('fb-emo');
+
+  if(opsi.benar){
+    btn.classList.add('correct');
+    for(var i=0;i<semua.length;i++){ if(semua[i]!==btn) semua[i].classList.add('dim'); }
+
+    skor += SKOR_PER_BENAR;
+    updateSkor();
+fb.className = 'feedback ok show';
+    fbEmo.textContent = opsi.emo || '🎉';
+    fbText.textContent = opsi.fb || 'Hebat! Jawabanmu tepat!';
+    ucap(opsi.fbSuara || opsi.fb || 'Hebat! Jawabanmu tepat!');
+
+    confetti();
+    popBintang();
+
+    var nextBtn = document.getElementById('next-btn');
+
+    if(opsi.lanjut){
+      nextBtn.classList.add('show');
+      nextBtn.textContent = 'LANJUT ➜';
+      nextBtn.onclick = function(){
+        subStep = opsi.lanjut;
+        renderSoal();
+        setTimeout(function(){ ucap(opsi.lanjut.suaraSituasi); }, 320);
+      };
+    } else if(subStep){
+      nextBtn.classList.add('show');
+      nextBtn.textContent = 'LANJUT ➜';
+      nextBtn.onclick = function(){ subStep = null; idx++; nextStep(); };
+    } else {
+      nextBtn.classList.add('show');
+      nextBtn.textContent = 'LANJUT ➜';
+      nextBtn.onclick = function(){ idx++; nextStep(); };
+    }
+  } else {
+    btn.classList.add('wrong');
+fb.className = 'feedback no show';
+    fbEmo.textContent = '🤔';
+    fbText.textContent = 'Belum tepat. Coba pilih jawaban yang lain ya!';
+    ucap('Belum tepat. Coba pilih jawaban yang lain ya!');
+
+    setTimeout(function(){
+      btn.disabled = true;
+      btn.classList.add('dim');
+      var sisa = [];
+      var all = document.querySelectorAll('#q-options .opt');
+      for(var i=0;i<all.length;i++){
+        if(!all[i].classList.contains('dim') && all[i]!==btn) sisa.push(all[i]);
+      }
+      for(var j=0;j<sisa.length;j++) sisa[j].disabled = false;
+      terkunci = false;
+      fb.className = 'feedback';
+    }, 1200);
+  }
+}
+
+function nextStep(){
+  if(idx >= SOAL.length){
+    tampilkanSelesai();
+  } else {
+    renderSoal();
+  }
+}
+
+function updateSkor(){
+  document.getElementById('pill-score').textContent = '⭐ ' + skor + ' poin';
+}
+function confetti(){
+  var fx = document.getElementById('fx');
+  var emojis = ['⭐','🌟','✨','🎉','💖','🎈','🍭','🌈'];
+  for(var i=0;i<26;i++){
+    var el = document.createElement('div');
+    el.className = 'conf';
+    el.textContent = emojis[Math.floor(Math.random()*emojis.length)];
+    el.style.left = Math.random()*100 + 'vw';
+    el.style.fontSize = (18 + Math.random()*22) + 'px';
+    el.style.animationDuration = (1.6 + Math.random()*1.6) + 's';
+    el.style.animationDelay = (Math.random()*0.35) + 's';
+    fx.appendChild(el);
+    (function(e){ setTimeout(function(){ e.remove(); }, 3600); })(el);
+  }
+}
+
+function popBintang(){
+  var el = document.createElement('div');
+  el.className = 'pop-star';
+  el.textContent = '🌟';
+  document.body.appendChild(el);
+  setTimeout(function(){ el.remove(); }, 1100);
+}
+
+function tampilkanSelesai(){
+  showPage('page-end');
+  document.getElementById('end-score').textContent = skor;
+  document.getElementById('end-max').textContent = SOAL.length * SKOR_PER_BENAR;
+  document.getElementById('end-lala').innerHTML = ART.end();
+  var maks = SOAL.length * SKOR_PER_BENAR;
+  var rasio = skor / maks;
+  var bintang = 1;
+  if(rasio >= 0.85) bintang = 3;
+  else if(rasio >= 0.6) bintang = 2;
+  var bStr = '';
+  for(var i=0;i<bintang;i++) bStr += '⭐';
+  for(var j=0;j<3-bintang;j++) bStr += '☆';
+  document.getElementById('end-stars').textContent = bStr;
+
+  setTimeout(function(){
+    ucap('Selamat! Kamu sudah membantu Lala melewati berbagai kegiatan sehari-hari. Menjadi anak yang baik berarti belajar peduli, berbagi, bekerja sama, dan menghargai orang lain.');
+  }, 400);
+
+  for(var k=0;k<3;k++){
+    setTimeout(confetti, k*400);
+  }
+}
+
+function restartGame(){
+  stopSuara();
+  idx = 0; skor = 0; subStep = null; terkunci = false;
+  updateSkor();
+  showPage('page-1');
+  document.getElementById('prog').style.width = '0%';
+  setTimeout(function(){ ucap('Hai! Aku Lala. Ayo ikut aku berpetualang hari ini!'); }, 300);
+}
+
+function speakStory(){
+  var s = SOAL[idx];
+  var data = subStep ? subStep : s;
+  ucap(data.suaraSituasi + ' ' + data.tanya);
+}
+
+document.getElementById('art-cover').innerHTML = ART.cover();
+updateSkor();
+</script>
+</body>
+</html>
